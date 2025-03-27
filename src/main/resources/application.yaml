@@ -1,0 +1,56 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: user
+    password: password
+
+
+  scheduled:
+    fixed-delay: 6_000  # Задержка в миллисекундах 60_000 = 1 мин
+    initial-delay: 6_000  # Задержка в миллисекундах 60_000 = 1 мин
+
+  data:
+    redis:
+      port: 6379
+      host: localhost
+      channels:
+        stock-alert-channel: stock_alert
+
+  mvc:
+    servlet:
+      path: /api/v1
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+elasticsearch:
+  indices:
+    cache-promo: "cash_promo_index"
+
+server:
+  port: 8182
+
+user-service:
+  host: http://localhost
+  port: 8080
+  version: /api/v1
+
+logging:
+  level:
+    root: info
+
+promotion:
+  notification:
+    remaining-views-threshold: 2   # Порог для remainingViews
+    seconds-before-expiry: 3600  # За сколько секунд до endDate считать акцию "истекающей", 3600 секунд = 1 час

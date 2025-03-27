@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --notify-keyspace-events Ex
+
+# --docker run -d --name infra-master_redis-2 -p 6379:6379 redis:latest redis-server --notify-keyspace-events Ex
