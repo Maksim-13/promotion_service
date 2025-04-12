@@ -91,41 +91,41 @@ public class PromotionServiceImpl implements PromotionService {
             log.info("reindexation has been completed");
         }
 
-        List<Promotion> promotions = promotionRepository.findAll();
-        List<UserDto> users = getUserDtos(promotions);
+        List<UserDto> users = userServiceClient.getUsers();
 
         if(users.isEmpty()){
             log.info("No users found");
             return;
         }
 
-        Map<Long, UserDto> userMap = users.stream()
-                .collect(Collectors.toMap(
-                        UserDto::id,
-                        user -> user,
-                        (existing, replacement) -> existing
-                ));
-
         elasticPromoRepository.saveAll(
-                promotions.stream().map(
-                        promo -> new SearchPromo(
-                                promo.getId(),
-                                userMap.get(promo.getUserId()).title(),
-                                userMap.get(promo.getUserId()).description(),
-                                userMap.get(promo.getUserId()).aboutMe(),
-                                userMap.get(promo.getUserId()).country(),
-                                userMap.get(promo.getUserId()).city(),
-                                promo.getUserId()
+                users.stream().map(
+                        user -> new SearchPromo(
+                                user.id(),
+                                user.title(),
+                                user.description(),
+                                user.aboutMe(),
+                                user.country(),
+                                user.city(),
+                                user.id()
                         )
                 ).toList()
         );
     }
 
     private List<UserDto> getUserDtos(List<Promotion> promotions) {
-        List<Long> userIds = promotions.stream()
+        List<Long> userIds = getUserIds(promotions);
+        return userServiceClient.getUsersByIds(userIds);
+    }
+
+    private List<UserDto> getUserDtos() {
+        return userServiceClient.getUsers();
+    }
+
+    private static List<Long> getUserIds(List<Promotion> promotions) {
+        return promotions.stream()
                 .map(Promotion::getUserId)
                 .distinct().toList();
-        return userServiceClient.getUsersByIds(userIds);
     }
 
     @Override
@@ -150,6 +150,7 @@ public class PromotionServiceImpl implements PromotionService {
         );
     }
 
+    @Transactional
     @Override
     public void stockAlertPublish(List<Promotion> promotions) {
         List<UserDto> users = getUserDtos(promotions);
@@ -158,7 +159,9 @@ public class PromotionServiceImpl implements PromotionService {
                 .map(promoMapper::toStockAlertDto)
                 .distinct().toList();
 
+        List<Long> userIds = getUserIds(promotions);
         stockAlertEventPublisher.publish(stockAlerts);
+        promotionRepository.markAsNotified(userIds);
     }
 
     @Override

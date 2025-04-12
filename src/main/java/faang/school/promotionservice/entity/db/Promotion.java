@@ -47,6 +47,9 @@ public class Promotion {
     @Column(name = "monetary_asset", nullable = false, precision = 19, scale = 4)
     private BigDecimal monetaryAsset;
 
+    @Column(name = "notification_sent", nullable = false)
+    private boolean notificationSent = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;

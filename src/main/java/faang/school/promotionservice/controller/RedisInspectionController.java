@@ -23,11 +23,12 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RedisInspectionController {
 
+    public static final String PATTERN_PROMO = "promo:*";
     private final RedisTemplate<String, CachePromoDto> redisTemplate;
 
     @GetMapping("/keys")
     public ResponseEntity<List<String>> getAllRedisKeys() {
-        Set<String> keys = redisTemplate.keys("*");
+        Set<String> keys = redisTemplate.keys(PATTERN_PROMO);
         return ResponseEntity.ok(new ArrayList<>(keys));
     }
 

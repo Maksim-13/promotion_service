@@ -43,11 +43,17 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
 
     List<Promotion> findByIdIn(List<Long> promoIds);
 
-    @Query("SELECT p FROM Promotion p " +
-            "WHERE p.remainingViews < :remainingViewsThreshold " +
-            "OR p.endDate < :timeThreshold")
+    @Query(value = """
+    SELECT * FROM promotion p 
+    WHERE p.notification_sent = false 
+    AND (p.remaining_views < :remainingViewsThreshold OR p.end_date < :timeThreshold)
+    """, nativeQuery = true)
     List<Promotion> findUserIdsWithLowRemainingViewsOrNearExpiry(
             @Param("remainingViewsThreshold") int remainingViewsThreshold,
             @Param("timeThreshold") LocalDateTime timeThreshold
     );
+
+    @Modifying
+    @Query("UPDATE Promotion p SET p.notificationSent = true WHERE p.id IN :ids")
+    void markAsNotified(@Param("ids") List<Long> ids);
 }
